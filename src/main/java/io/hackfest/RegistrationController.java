@@ -18,9 +18,11 @@ import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.WebApplicationException;
 import java.util.List;
 import java.util.Map;
 
+import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
 import static io.hackfest.Constants.DNS_ROOT;
 import static io.hackfest.Constants.K8S_CA_ISSUER;
 import static io.hackfest.Constants.K8S_KEYSTORE_PASSWORD_SECRET_KEY;
@@ -56,6 +58,10 @@ public class RegistrationController {
     public Secret registerDevice(
             @FormParam("deviceId") String deviceId
     ) throws InterruptedException {
+        PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
+                .orElseThrow(() -> new WebApplicationException("DeviceId unknown", 404));
+
+
         String deviceName = POS_EDGE_NAME_PREFIX + deviceId;
         String dnsName = "device-" + deviceId + "." + DNS_ROOT;
 
@@ -67,7 +73,10 @@ public class RegistrationController {
                             new ObjectMetaBuilder()
                                     .withName(deviceName)
                                     .withNamespace(K8S_NAMESPACE)
-                                    .withLabels(Map.of(POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE))
+                                    .withLabels(Map.of(
+                                            POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE,
+                                            DEVICE_ID_LABEL_KEY, deviceId
+                                    ))
                                     .build()
                     )
                     .withSpec(
@@ -104,9 +113,11 @@ public class RegistrationController {
                 Thread.sleep(100);
             }
 
-            return kubernetesClient.secrets().inNamespace(K8S_NAMESPACE)
+            Secret secret = kubernetesClient.secrets().inNamespace(K8S_NAMESPACE)
                     .withName(deviceName)
                     .get();
+
+            return secret;
         }
     }
 }
