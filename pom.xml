@@ -1,4 +1,10 @@
 <?xml version="1.0"?>
+<!-- Attention:
+ We do not use the enterprise version of Quarkus here, because the fabric8 cert-manager models are missing certain
+ attributes of the model (the jars are version 5.x, but current Quarkus has version 6.x)
+
+ This was discussed and approved in the Drop In clinic on 23.03.2023 with Andrea Battaglia
+-->
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
@@ -43,7 +49,6 @@
     <dependency>
       <groupId>io.fabric8</groupId>
       <artifactId>certmanager-client</artifactId>
-      <version>6.3.1</version>
     </dependency>
     <dependency>
       <groupId>io.quarkus</groupId>
