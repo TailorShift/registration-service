@@ -1,41 +1,27 @@
 package io.hackfest;
 
-import io.fabric8.certmanager.api.model.v1.Certificate;
-import io.fabric8.certmanager.api.model.v1.CertificateBuilder;
-import io.fabric8.certmanager.api.model.v1.CertificateKeystoresBuilder;
-import io.fabric8.certmanager.api.model.v1.CertificateList;
-import io.fabric8.certmanager.api.model.v1.CertificateSecretTemplateBuilder;
-import io.fabric8.certmanager.api.model.v1.CertificateSpecBuilder;
-import io.fabric8.certmanager.api.model.v1.JKSKeystoreBuilder;
+import io.fabric8.certmanager.api.model.v1.*;
 import io.fabric8.certmanager.client.DefaultCertManagerClient;
 import io.fabric8.certmanager.client.NamespacedCertManagerClient;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.inject.Inject;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import java.util.List;
 import java.util.Map;
 
-import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
-import static io.hackfest.Constants.DNS_ROOT;
-import static io.hackfest.Constants.K8S_CA_ISSUER;
-import static io.hackfest.Constants.K8S_KEYSTORE_PASSWORD_SECRET_KEY;
-import static io.hackfest.Constants.K8S_KEYSTORE_PASSWORD_SECRET_NAME;
-import static io.hackfest.Constants.K8S_NAMESPACE;
-import static io.hackfest.Constants.POS_EDGE_NAME_PREFIX;
-import static io.hackfest.Constants.POS_EDGE_SECRET_LABEL_KEY;
-import static io.hackfest.Constants.POS_EDGE_SECRET_LABEL_VALUE;
+import static io.hackfest.Constants.*;
 
 @Path("/registration")
 public class RegistrationController {
     @Inject
     private KubernetesClient kubernetesClient;
+
+    @ConfigProperty(name = "k8s.namespace")
+    String k8sNamespace;
 
     @GET
     @Path("/devices")
@@ -82,7 +68,6 @@ public class RegistrationController {
                     .withSpec(
                             new CertificateSpecBuilder()
                                     .withSecretName(deviceName)
-//                                    .withCommonName("example.com")
                                     .withIsCA(false)
                                     .withSecretTemplate(
                                             new CertificateSecretTemplateBuilder()

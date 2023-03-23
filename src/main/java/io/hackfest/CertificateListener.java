@@ -6,24 +6,27 @@ import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
 import io.fabric8.kubernetes.client.WatcherException;
 import io.quarkus.runtime.StartupEvent;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.inject.Singleton;
 
 import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
-import static io.hackfest.Constants.K8S_NAMESPACE;
 
-@ApplicationScoped
+@Singleton
 public class CertificateListener {
     private static final Logger logger = LoggerFactory.getLogger(CertificateListener.class);
 
     private Watch watch;
 
+    @ConfigProperty(name = "k8s.namespace")
+    String k8sNamespace;
+
     void onStart(@Observes StartupEvent event, KubernetesClient kubernetesClient) {
         watch = kubernetesClient.secrets()
-                .inNamespace(K8S_NAMESPACE)
+                .inNamespace(k8sNamespace)
                 .withLabel(Constants.POS_EDGE_SECRET_LABEL_KEY, Constants.POS_EDGE_SECRET_LABEL_VALUE)
                 .watch(new Watcher<>() {
                     @Override
@@ -34,15 +37,15 @@ public class CertificateListener {
                                 .ifPresentOrElse(
                                         device -> {
                                             switch (action) {
-                                                case ADDED -> onAdded(deviceId, resource);
-                                                case MODIFIED -> onModified(deviceId, resource);
-                                                case DELETED -> onDeleted(deviceId, resource);
+                                                case ADDED -> onAdded(device, resource);
+                                                case MODIFIED -> onModified(device, resource);
+                                                case DELETED -> onDeleted(device, resource);
                                                 default -> logger.trace("Irrelevant action {}", action);
                                             }
                                         },
                                         () -> logger.warn("DeviceId {} not present in database", deviceId)
                                 );
-c                    }
+                    }
 
                     @Override
                     public void onClose() {
