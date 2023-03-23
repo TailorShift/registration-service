@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Singleton;
+import javax.transaction.Transactional;
 
 import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
 
@@ -24,6 +25,7 @@ public class CertificateListener {
     @ConfigProperty(name = "k8s.namespace")
     String k8sNamespace;
 
+    @Transactional
     void onStart(@Observes StartupEvent event, KubernetesClient kubernetesClient) {
         watch = kubernetesClient.secrets()
                 .inNamespace(k8sNamespace)
