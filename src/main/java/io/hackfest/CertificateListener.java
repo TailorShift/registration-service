@@ -12,9 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.event.Observes;
 import javax.inject.Singleton;
-import javax.transaction.Transactional;
-
-import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
 
 @Singleton
 public class CertificateListener {
@@ -32,20 +29,7 @@ public class CertificateListener {
                 .watch(new Watcher<>() {
                     @Override
                     public void eventReceived(Action action, Secret resource) {
-                        String deviceId = resource.getMetadata().getLabels().getOrDefault(DEVICE_ID_LABEL_KEY, "undefined");
-
-                        PosDeviceEntity.findByDeviceId(deviceId)
-                                .ifPresentOrElse(
-                                        device -> {
-                                            switch (action) {
-                                                case ADDED -> certificateUpdater.onAdded(device, resource);
-                                                case MODIFIED -> certificateUpdater.onModified(device, resource);
-                                                case DELETED -> certificateUpdater.onDeleted(device, resource);
-                                                default -> logger.trace("Irrelevant action {}", action);
-                                            }
-                                        },
-                                        () -> logger.warn("DeviceId {} not present in database", deviceId)
-                                );
+                        certificateUpdater.handleUpdate(action, resource);
                     }
 
                     @Override
