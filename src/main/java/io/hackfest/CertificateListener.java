@@ -25,7 +25,6 @@ public class CertificateListener {
     @ConfigProperty(name = "k8s.namespace")
     String k8sNamespace;
 
-    @Transactional
     void onStart(@Observes StartupEvent event, KubernetesClient kubernetesClient, CertificateUpdater certificateUpdater) {
         watch = kubernetesClient.secrets()
                 .inNamespace(k8sNamespace)
