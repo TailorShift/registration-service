@@ -26,7 +26,7 @@ public class CertificateListener {
     String k8sNamespace;
 
     @Transactional
-    void onStart(@Observes StartupEvent event, KubernetesClient kubernetesClient) {
+    void onStart(@Observes StartupEvent event, KubernetesClient kubernetesClient, CertificateUpdater certificateUpdater) {
         watch = kubernetesClient.secrets()
                 .inNamespace(k8sNamespace)
                 .withLabel(Constants.POS_EDGE_SECRET_LABEL_KEY, Constants.POS_EDGE_SECRET_LABEL_VALUE)
@@ -39,9 +39,9 @@ public class CertificateListener {
                                 .ifPresentOrElse(
                                         device -> {
                                             switch (action) {
-                                                case ADDED -> onAdded(device, resource);
-                                                case MODIFIED -> onModified(device, resource);
-                                                case DELETED -> onDeleted(device, resource);
+                                                case ADDED -> certificateUpdater.onAdded(device, resource);
+                                                case MODIFIED -> certificateUpdater.onModified(device, resource);
+                                                case DELETED -> certificateUpdater.onDeleted(device, resource);
                                                 default -> logger.trace("Irrelevant action {}", action);
                                             }
                                         },
@@ -60,20 +60,5 @@ public class CertificateListener {
                     }
                 });
 
-    }
-
-    private void onAdded(PosDeviceEntity device, Secret secret) {
-        logger.info("New certificate for deviceId {} created", device.id);
-        device.iotCertificate = secret.getData().get("tls.crt");
-    }
-
-    private void onModified(PosDeviceEntity device, Secret secret) {
-        logger.info("Existing certificate for deviceId {} modified", device.id);
-        device.iotCertificate = secret.getData().get("tls.crt");
-    }
-
-    private void onDeleted(PosDeviceEntity device, Secret secret) {
-        logger.info("Existing certificate for deviceId {} deleted", device.id);
-        device.iotCertificate = null;
     }
 }
