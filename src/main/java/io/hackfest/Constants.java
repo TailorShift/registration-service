@@ -1,7 +1,6 @@
 package io.hackfest;
 
 public class Constants {
-    public final static String K8S_NAMESPACE = "sandbox";
     public final static String K8S_CA_ISSUER = "tailorshift-ca-issuer";
     public final static String K8S_KEYSTORE_PASSWORD_SECRET_NAME = "java-keystore";
     public final static String K8S_KEYSTORE_PASSWORD_SECRET_KEY = "password";

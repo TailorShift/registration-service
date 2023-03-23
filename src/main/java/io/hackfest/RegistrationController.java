@@ -28,13 +28,13 @@ public class RegistrationController {
     public List<Secret> listDevices() {
         try (NamespacedCertManagerClient certManagerClient = new DefaultCertManagerClient()) {
             return certManagerClient.v1().certificates()
-                    .inNamespace(K8S_NAMESPACE)
+                    .inNamespace(k8sNamespace)
                     .withLabels(Map.of(POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE))
                     .list()
                     .getItems()
                     .stream()
                     .map(cert -> cert.getMetadata().getName())
-                    .map(certName -> kubernetesClient.secrets().inNamespace(K8S_NAMESPACE).withName(certName).get())
+                    .map(certName -> kubernetesClient.secrets().inNamespace(k8sNamespace).withName(certName).get())
                     .toList();
         }
     }
@@ -58,7 +58,7 @@ public class RegistrationController {
                     .withMetadata(
                             new ObjectMetaBuilder()
                                     .withName(deviceName)
-                                    .withNamespace(K8S_NAMESPACE)
+                                    .withNamespace(k8sNamespace)
                                     .withLabels(Map.of(
                                             POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE,
                                             DEVICE_ID_LABEL_KEY, deviceId
@@ -92,13 +92,13 @@ public class RegistrationController {
                     )
                     .build();
 
-            while (!kubernetesClient.secrets().inNamespace(K8S_NAMESPACE)
+            while (!kubernetesClient.secrets().inNamespace(k8sNamespace)
                     .withName(deviceName)
                     .isReady()) {
                 Thread.sleep(100);
             }
 
-            Secret secret = kubernetesClient.secrets().inNamespace(K8S_NAMESPACE)
+            Secret secret = kubernetesClient.secrets().inNamespace(k8sNamespace)
                     .withName(deviceName)
                     .get();
 
