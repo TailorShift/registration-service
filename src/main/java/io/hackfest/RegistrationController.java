@@ -72,7 +72,10 @@ public class RegistrationController {
                                     .withIsCA(false)
                                     .withSecretTemplate(
                                             new CertificateSecretTemplateBuilder()
-                                                    .withLabels(Map.of(POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE))
+                                                    .withLabels(Map.of(
+                                                            POS_EDGE_SECRET_LABEL_KEY, POS_EDGE_SECRET_LABEL_VALUE,
+                                                            DEVICE_ID_LABEL_KEY, deviceId
+                                                    ))
                                                     .build()
                                     )
                                     .withKeystores(
