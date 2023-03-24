@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Singleton;
 import javax.transaction.Transactional;
 
+import java.util.Base64;
+
 import static io.hackfest.Constants.DEVICE_ID_LABEL_KEY;
 
 @Singleton
@@ -34,12 +36,14 @@ public class CertificateUpdater {
 
     private void onAdded(PosDeviceEntity device, Secret secret) {
         logger.info("New certificate for deviceId {} created", device.id);
-        device.iotCertificate = secret.getData().get("tls.crt");
+        String base64Cert = secret.getData().get("tls.crt");
+        device.iotCertificate = new String(Base64.getDecoder().decode(base64Cert));
     }
 
     private void onModified(PosDeviceEntity device, Secret secret) {
         logger.info("Existing certificate for deviceId {} modified", device.id);
-        device.iotCertificate = secret.getData().get("tls.crt");
+        String base64Cert = secret.getData().get("tls.crt");
+        device.iotCertificate = new String(Base64.getDecoder().decode(base64Cert));
     }
 
     private void onDeleted(PosDeviceEntity device, Secret secret) {
