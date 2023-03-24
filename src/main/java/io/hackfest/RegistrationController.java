@@ -7,6 +7,8 @@ import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -17,6 +19,7 @@ import static io.hackfest.Constants.*;
 
 @Path("/registration")
 public class RegistrationController {
+    private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
     @Inject
     private KubernetesClient kubernetesClient;
 
@@ -50,8 +53,6 @@ public class RegistrationController {
 
         String deviceName = POS_EDGE_NAME_PREFIX + deviceId;
         String dnsName = "device-" + deviceId + "." + DNS_ROOT;
-
-        StringBuilder resultBuilder = new StringBuilder();
 
         try (NamespacedCertManagerClient certManagerClient = new DefaultCertManagerClient()) {
             Certificate certificate = new CertificateBuilder()
@@ -92,6 +93,13 @@ public class RegistrationController {
                     )
                     .build();
 
+            logger.info("Creating certificate for device {}", deviceId);
+            certManagerClient.v1().certificates()
+                    .inNamespace(k8sNamespace)
+                    .resource(certificate)
+                    .createOrReplace();
+
+            logger.info("Waiting for certificate secrets of device {}", deviceId);
             while (!kubernetesClient.secrets().inNamespace(k8sNamespace)
                     .withName(deviceName)
                     .isReady()) {
