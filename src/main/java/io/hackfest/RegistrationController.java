@@ -6,6 +6,8 @@ import io.fabric8.certmanager.client.NamespacedCertManagerClient;
 import io.fabric8.kubernetes.api.model.ObjectMetaBuilder;
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.hackfest.error.ApiException;
+import io.hackfest.error.ErrorCode;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +50,7 @@ public class RegistrationController {
             @FormParam("deviceId") String deviceId
     ) throws InterruptedException {
         PosDeviceEntity device = PosDeviceEntity.findByDeviceId(deviceId)
-                .orElseThrow(() -> new WebApplicationException("DeviceId unknown", 404));
-
+                .orElseThrow(() -> ApiException.badRequest(ErrorCode.DEVICE_ID_UNKNOWN, deviceId));
 
         String deviceName = POS_EDGE_NAME_PREFIX + deviceId;
         String dnsName = "device-" + deviceId + "." + DNS_ROOT;
