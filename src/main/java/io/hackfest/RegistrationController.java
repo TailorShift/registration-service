@@ -23,7 +23,7 @@ import static io.hackfest.Constants.*;
 public class RegistrationController {
     private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
     @Inject
-    private KubernetesClient kubernetesClient;
+    KubernetesClient kubernetesClient;
 
     @ConfigProperty(name = "k8s.namespace")
     String k8sNamespace;
